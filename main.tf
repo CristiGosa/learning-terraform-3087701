@@ -62,6 +62,7 @@ module "security_group" {
 
 module "alb" {
   source = "terraform-aws-modules/alb/aws"
+  version = "~>6.0"
 
   name               = "blog-alb"
   load_balancer_type = "application"
@@ -73,8 +74,9 @@ module "alb" {
   target_groups = [ 
     {
       name_prefix      = "blog-"
-      protocol         = "HTTP"
-      port             = 80
+      backend_protocol = "HTTP"
+      backend_port     = 80
+      target_type      = "instance"
       targets = {
         my_target = {
           target_id = aws_instance.blog.id

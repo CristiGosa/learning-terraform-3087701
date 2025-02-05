@@ -34,16 +34,21 @@ module "vpc" {
   }
 }
 
-resource "aws_instance" "blog" {
-  ami                    = data.aws_ami.app_ami.id
-  instance_type          = var.instance_type
-  vpc_security_group_ids = [module.security_group.security_group_id]
+module "autoscaling" {
+  source  = "terraform-aws-modules/autoscaling/aws"
+  version = "8.0.1"
+  
+  min_size = 1
+  max_size = 2
 
-  subnet_id = module.vpc.public_subnets[0]
+  name = "blog" //will replace the original aws_instance
 
-  tags = {
-    Name = "Learning Terraform"
-  }
+  vpc_zone_identifier = module.vpc.public_subnets
+  target_group_arns   = module.alb.target_group_arns
+  security_groups     = [module.security_group.security_group_id]
+
+  image_id = data.aws_ami.app_ami.id
+  instance_type = var.instance_type
 }
 
 module "security_group" {
